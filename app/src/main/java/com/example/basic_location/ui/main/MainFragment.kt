@@ -1,10 +1,8 @@
 package com.example.basic_location.ui.main
 
 import android.Manifest
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.location.Location
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,22 +12,28 @@ import android.widget.TextView
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.example.basic_location.R
+import com.example.basic_location.ui.main.database.MeteocoolLocation
+import org.jetbrains.anko.doAsync
 
 
 class MainFragment : Fragment() {
 
     companion object {
         fun newInstance() = MainFragment()
+
+        val PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION
     }
 
-    private lateinit var viewModel: MainViewModel
+//    private lateinit var locationObserver : Observer<MeteocoolLocation>
 
-    private lateinit var locationObserver : Observer<Location>
+    private lateinit var myService : LocationService
 
-    private var myService : LocationService = LocationService()
+    private val locationViewModel : MainViewModel by viewModels{
+        MainViewModelFactory((requireActivity().application as BasicLocationApplication).repository)
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -40,8 +44,9 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-
+        myService = LocationService()
+        ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 2)
+        //myService.setDao((requireActivity().application as BasicLocationApplication).dao)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -51,15 +56,22 @@ class MainFragment : Fragment() {
             when (PackageManager.PERMISSION_GRANTED) {
                 ContextCompat.checkSelfPermission(
                     requireContext(),
-                    Manifest.permission.ACCESS_FINE_LOCATION
+                    PERMISSION
                 ) -> {
-                    requireActivity().startService(Intent(requireContext(), LocationService::class.java))
+                    doAsync {
+                        requireActivity().startService(
+                            Intent(
+                                requireContext(),
+                                LocationService::class.java
+                            )
+                        )
+                    }
                 }
                 else -> {
                     // You can directly ask for the permission.
                     // The registered ActivityResultCallback gets the result of this request.
                     requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
-                    ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 2)
+                    ActivityCompat.requestPermissions(requireActivity(), arrayOf(PERMISSION), 2)
                 }
             }
         }
@@ -68,15 +80,10 @@ class MainFragment : Fragment() {
             requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
         }
 
-        locationObserver = Observer<Location> {
-            val text = view.findViewById<View>(R.id.message) as TextView
-            text.text = String.format("%.3f, %.3f", it.latitude, it.longitude)
-        }
-    }
-
-    override fun onActivityCreated(savedInstanceState: Bundle?) {
-        super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this, MainViewModelFactory(LocationRepository(myService, requireActivity().getSharedPreferences("Test", Context.MODE_PRIVATE)))).get(MainViewModel::class.java)
+//        locationObserver = Observer<MeteocoolLocation> {
+//            val text = view.findViewById<View>(R.id.message) as TextView
+//            text.text = String.format("%.6f, %.6f", it.latitude, it.longitude)
+//        }
     }
 
     override fun onResume() {
@@ -85,17 +92,24 @@ class MainFragment : Fragment() {
         if (
             ContextCompat.checkSelfPermission(
                 requireContext(),
-                Manifest.permission.ACCESS_FINE_LOCATION
+                PERMISSION
             ) == PackageManager.PERMISSION_GRANTED
         ) {
-            requireActivity().startService(Intent(requireContext(), LocationService::class.java))
-            viewModel.currentLocation.observe(viewLifecycleOwner, locationObserver)
+            doAsync {
+                requireActivity().startService(
+                    Intent(
+                        requireContext(),
+                        LocationService::class.java
+                    )
+                )
+            }
+//            locationViewModel.currentLocation.observe(viewLifecycleOwner, locationObserver)
         }
     }
 
     override fun onPause() {
         super.onPause()
-        requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
+        //requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
     }
 
     override fun onRequestPermissionsResult(
@@ -109,8 +123,15 @@ class MainFragment : Fragment() {
                 if ((grantResults.isNotEmpty() &&
                             grantResults[0] == PackageManager.PERMISSION_GRANTED)
                 ) {
-                    requireActivity().startService(Intent(requireContext(), LocationService::class.java))
-                    viewModel.currentLocation.observe(viewLifecycleOwner, locationObserver)
+                    doAsync {
+                        requireActivity().startService(
+                            Intent(
+                                requireContext(),
+                                LocationService::class.java
+                            )
+                        )
+                    }
+//                    locationViewModel.currentLocation.observe(viewLifecycleOwner, locationObserver)
                 } else {
                     // Explain to the user that the feature is unavailable because
                     // the features requires a permission that the user has denied.

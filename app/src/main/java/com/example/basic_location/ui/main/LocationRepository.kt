@@ -7,7 +7,7 @@ import com.example.basic_location.ui.main.database.MeteocoolLocation
 import com.example.basic_location.ui.main.database.MeteocoolLocationDao
 import kotlinx.coroutines.flow.Flow
 
-class LocationRepository(private val locationService: LocationService, private val meteocoolLocationDao: MeteocoolLocationDao) {
+class LocationRepository(private val meteocoolLocationDao: MeteocoolLocationDao) {
 
     val lastLocation : Flow<MeteocoolLocation> = meteocoolLocationDao.getLastLocation()
 

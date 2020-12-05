@@ -9,6 +9,5 @@ data class MeteocoolLocation(
     @PrimaryKey val uid: Int,
     val longitude: Double,
     val latitude: Double,
-    val altitude: Double,
-    val timestamp: Date
+    val altitude: Double
 )

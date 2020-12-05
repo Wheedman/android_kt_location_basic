@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
+import kotlinx.coroutines.CoroutineScope
 
 @Database(entities = arrayOf(MeteocoolLocation::class), version = 1)
 abstract class BasicLocationDatabase : RoomDatabase() {
@@ -22,7 +23,7 @@ abstract class BasicLocationDatabase : RoomDatabase() {
                 val instance = Room.databaseBuilder(
                     context.applicationContext,
                     BasicLocationDatabase::class.java,
-                    "word_database"
+                    "location_database"
                 ).build()
                 INSTANCE = instance
                 // return instance

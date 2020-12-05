@@ -9,10 +9,13 @@ import androidx.lifecycle.ViewModelProvider
  * Factory for creating a [WebViewModel] with a constructor that takes [SharedPreferences]
  * for the stored values.
  */
-class MainViewModelFactory(private val repository: LocationRepository): ViewModelProvider.NewInstanceFactory(){
+class MainViewModelFactory(private val repository: LocationRepository): ViewModelProvider.Factory{
 
-    @Suppress("UNCHECKED_CAST")
     override fun <T : ViewModel> create(modelClass: Class<T>): T {
-        return MainViewModel(repository) as T
+        if (modelClass.isAssignableFrom(MainViewModel::class.java)) {
+            @Suppress("UNCHECKED_CAST")
+            return MainViewModel(repository) as T
+        }
+        throw IllegalArgumentException("Unknown ViewModel class")
     }
 }
