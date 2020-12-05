@@ -14,6 +14,7 @@ import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.example.basic_location.ui.main.database.MeteocoolLocationDao
 
 
 class LocationService() : Service() {
@@ -76,6 +77,7 @@ class LocationService() : Service() {
         init {
             Log.e(TAG, "LocationListener $provider")
             val lastLocation = Location(provider)
+
             getSharedPreferences("LocationPrefs", Context.MODE_PRIVATE).edit()
                 .putString("LONG", lastLocation.longitude.toString())
                 .putString("LAT", lastLocation.latitude.toString())

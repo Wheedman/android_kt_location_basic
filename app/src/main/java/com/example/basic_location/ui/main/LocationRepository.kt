@@ -1,16 +1,19 @@
 package com.example.basic_location.ui.main
 
-import android.content.SharedPreferences
 import android.location.Location
+import androidx.annotation.WorkerThread
 import androidx.lifecycle.LiveData
+import com.example.basic_location.ui.main.database.MeteocoolLocation
+import com.example.basic_location.ui.main.database.MeteocoolLocationDao
+import kotlinx.coroutines.flow.Flow
 
-class LocationRepository(private val locationService: LocationService, private val locationCache: SharedPreferences) {
+class LocationRepository(private val locationService: LocationService, private val meteocoolLocationDao: MeteocoolLocationDao) {
 
-    fun isRequestingLocation() : LiveData<Boolean> {
-        return locationCache.booleanLiveData("requesting", false)
+    val lastLocation : Flow<MeteocoolLocation> = meteocoolLocationDao.getLastLocation()
+
+    @WorkerThread
+    suspend fun insert(location: MeteocoolLocation) {
+        meteocoolLocationDao.insertLocation(location)
     }
 
-    fun getLocation() : LiveData<Location> {
-        return locationService.getLastLocation()
-    }
 }
