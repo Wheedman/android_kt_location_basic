@@ -3,20 +3,21 @@ package com.example.basic_location.ui.main
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
-import androidx.lifecycle.Observer
+import androidx.work.*
 import com.example.basic_location.R
-import com.example.basic_location.ui.main.database.MeteocoolLocation
-import org.jetbrains.anko.doAsync
+import timber.log.Timber
+import java.util.concurrent.TimeUnit
 
 
 class MainFragment : Fragment() {
@@ -24,14 +25,12 @@ class MainFragment : Fragment() {
     companion object {
         fun newInstance() = MainFragment()
 
-        val PERMISSION = Manifest.permission.ACCESS_COARSE_LOCATION
+        val PERMISSION = Manifest.permission.ACCESS_FINE_LOCATION
     }
 
 //    private lateinit var locationObserver : Observer<MeteocoolLocation>
 
-    private lateinit var myService : LocationService
-
-    private val locationViewModel : MainViewModel by viewModels{
+    private val locationViewModel: MainViewModel by viewModels {
         MainViewModelFactory((requireActivity().application as BasicLocationApplication).repository)
     }
 
@@ -44,40 +43,46 @@ class MainFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        myService = LocationService()
         ActivityCompat.requestPermissions(requireActivity(), arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE), 2)
-        //myService.setDao((requireActivity().application as BasicLocationApplication).dao)
+//        myService.setDao((requireActivity().application as BasicLocationApplication).dao)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         val startBtn = view.findViewById<Button>(R.id.startBtn)
-        startBtn.setOnClickListener{
-            when (PackageManager.PERMISSION_GRANTED) {
-                ContextCompat.checkSelfPermission(
-                    requireContext(),
-                    PERMISSION
-                ) -> {
-                    doAsync {
-                        requireActivity().startService(
-                            Intent(
-                                requireContext(),
-                                LocationService::class.java
-                            )
-                        )
-                    }
-                }
-                else -> {
-                    // You can directly ask for the permission.
-                    // The registered ActivityResultCallback gets the result of this request.
-                    requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
-                    ActivityCompat.requestPermissions(requireActivity(), arrayOf(PERMISSION), 2)
-                }
-            }
+        startBtn.setOnClickListener {
+            requestPermissions(arrayOf(PERMISSION), 2)
         }
 
         view.findViewById<Button>(R.id.pause).setOnClickListener {
-            requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
+          val isFineEnabled = ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+            val isCoarseEnabled = ActivityCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
+
+            val isBackgroundEnabled = ActivityCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.ACCESS_BACKGROUND_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+            val output = String.format("fine: %b , coarse: %b, background: %b", isFineEnabled, isCoarseEnabled, isBackgroundEnabled)
+            Timber.d(output)
+            view.findViewById<TextView>(R.id.message).text = output
+        }
+
+        view.findViewById<Button>(R.id.coarse).setOnClickListener {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_COARSE_LOCATION), 4)
+        }
+        view.findViewById<Button>(R.id.fine).setOnClickListener {
+            requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 5)
+        }
+        view.findViewById<Button>(R.id.background).setOnClickListener {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                requestPermissions(arrayOf(Manifest.permission.ACCESS_BACKGROUND_LOCATION), 6)
+            }
         }
 
 //        locationObserver = Observer<MeteocoolLocation> {
@@ -86,67 +91,37 @@ class MainFragment : Fragment() {
 //        }
     }
 
-    override fun onResume() {
-        super.onResume()
-
-        if (
-            ContextCompat.checkSelfPermission(
-                requireContext(),
-                PERMISSION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
-            doAsync {
-                requireActivity().startService(
-                    Intent(
-                        requireContext(),
-                        LocationService::class.java
-                    )
-                )
-            }
-//            locationViewModel.currentLocation.observe(viewLifecycleOwner, locationObserver)
-        }
-    }
-
-    override fun onPause() {
-        super.onPause()
-        //requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
-    }
-
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
         grantResults: IntArray
     ) {
-        when (requestCode) {
-            2 -> {
-                // If request is cancelled, the result arrays are empty.
-                if ((grantResults.isNotEmpty() &&
-                            grantResults[0] == PackageManager.PERMISSION_GRANTED)
-                ) {
-                    doAsync {
-                        requireActivity().startService(
-                            Intent(
-                                requireContext(),
-                                LocationService::class.java
-                            )
-                        )
-                    }
-//                    locationViewModel.currentLocation.observe(viewLifecycleOwner, locationObserver)
-                } else {
-                    // Explain to the user that the feature is unavailable because
-                    // the features requires a permission that the user has denied.
-                    // At the same time, respect the user's decision. Don't link to
-                    // system settings in an effort to convince the user to change
-                    // their decision.
-                    requireActivity().stopService(Intent(requireContext(), LocationService::class.java))
-                }
-                return
-            }
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        Timber.d("onRequestPermissionResult")
+        if (requestCode == 2) {
+            if ((grantResults.isNotEmpty() &&
+                        grantResults[0] == PackageManager.PERMISSION_GRANTED)
+            ) {
+                Timber.d("granted")
+                val constraints = Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
 
-            // Add other 'when' lines to check for other
-            // permissions this app might request.
-            else -> {
-                // Ignore all other requests.
+                val uploadWorkRequest: PeriodicWorkRequest =
+                    PeriodicWorkRequestBuilder<ListenableLocationUpdateWorker>(
+                        15, TimeUnit.MINUTES
+                    )
+                        .setConstraints(constraints)
+                        .setBackoffCriteria(
+                            BackoffPolicy.LINEAR, 5,
+                            TimeUnit.MINUTES
+                        )
+                        .build()
+
+                WorkManager
+                    .getInstance(requireContext())
+                    .enqueueUniquePeriodicWork("periodic", ExistingPeriodicWorkPolicy.REPLACE, uploadWorkRequest)
+
             }
         }
     }

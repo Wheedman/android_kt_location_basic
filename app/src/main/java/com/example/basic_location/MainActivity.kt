@@ -3,6 +3,7 @@ package com.example.basic_location
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import com.example.basic_location.ui.main.MainFragment
+import timber.log.Timber
 
 class MainActivity : AppCompatActivity() {
 
