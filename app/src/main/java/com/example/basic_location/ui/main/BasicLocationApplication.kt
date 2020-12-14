@@ -1,6 +1,7 @@
 package com.example.basic_location.ui.main
 
 import android.app.Application
+import android.content.Context
 import com.example.basic_location.ui.main.database.BasicLocationDatabase
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
@@ -11,7 +12,8 @@ class BasicLocationApplication : Application(){
 
     val database by lazy {BasicLocationDatabase.getDatabase(this)}
     val dao by lazy {database.meteoLocationDao()}
-    val repository by lazy { LocationRepository(dao)}
+    val sharedPrefs by lazy {getSharedPreferences("Location", MODE_PRIVATE)}
+    val repository by lazy { LocationRepository(dao, sharedPrefs)}
 
 
     override fun onCreate() {

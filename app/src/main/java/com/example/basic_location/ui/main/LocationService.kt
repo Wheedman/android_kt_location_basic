@@ -24,7 +24,6 @@ class LocationService() : Service() {
 
     private val binder = LocalBinder()
 
-
     private lateinit var listener : LocationListener
     private lateinit var criteria : Criteria
 
@@ -36,25 +35,23 @@ class LocationService() : Service() {
             applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
         listener = LocationServiceListener(this)
         criteria = Criteria()
-        criteria.accuracy = Criteria.ACCURACY_MEDIUM
-        criteria.powerRequirement = Criteria.POWER_MEDIUM
+//        criteria.accuracy = Criteria.ACCURACY_MEDIUM
+//        criteria.powerRequirement = Criteria.POWER_HIGH
     }
 
     @SuppressLint("MissingPermission")
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
        Timber.d("onStartCommand")
-        val test  = locationManager.getProviders(true)
-        val test2 = locationManager.getProviders(false)
         val prov = locationManager.getBestProvider(criteria, true)
-        val prov2 = locationManager.getBestProvider(criteria, false)
-//        locationManager.requestLocationUpdates(minTime, minDistance, criteria, listener, Looper.myLooper())
-        locationManager.requestLocationUpdates(prov, minTime, minDistance, listener)
-
-
-//       locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, minTime, minDistance, listener)
-//       locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, minTime, minDistance, listener)
-//       locationManager.requestLocationUpdates(LocationManager.PASSIVE_PROVIDER, minTime, minDistance, listener)
-        return START_STICKY
+        return if(prov == null){
+            Timber.d("No suitable provider")
+            stopSelf()
+            START_NOT_STICKY
+        }else {
+            Timber.d("Starting location updates")
+            locationManager.requestLocationUpdates(prov, minTime, minDistance, listener)
+            START_STICKY
+        }
     }
 
     override fun onDestroy() {
@@ -72,11 +69,4 @@ class LocationService() : Service() {
         fun getService(): LocationService = this@LocationService
     }
 
-    fun getListener() : LocationListener{
-        return listener
-    }
-
-    fun setListener(locationServiceListener: LocationListener){
-        listener = locationServiceListener
-    }
 }

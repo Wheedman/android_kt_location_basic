@@ -12,4 +12,15 @@ class MainViewModel(private val locationRepository : LocationRepository) : ViewM
 
     val currentLocation : LiveData<MeteocoolLocation>
         get() = _currentLocation
+
+
+    private val _currentSharedLocation = locationRepository.locationShared
+
+    val currentSharedLocation : LiveData<MeteocoolLocation>
+        get() = _currentSharedLocation
+
+    private val _currentSharedStringLocation = locationRepository.locationStringShared
+
+    val currentSharedStringLocation : LiveData<String>
+        get() = _currentSharedStringLocation
 }

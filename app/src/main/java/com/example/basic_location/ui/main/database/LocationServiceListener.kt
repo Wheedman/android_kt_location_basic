@@ -5,7 +5,10 @@ import android.location.Location
 import android.location.LocationListener
 import android.os.Bundle
 import androidx.core.content.ContextCompat
+import com.example.basic_location.ui.main.BasicLocationApplication
 import com.example.basic_location.ui.main.LocationService
+import com.google.gson.Gson
+import org.jetbrains.anko.doAsync
 import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
@@ -13,15 +16,32 @@ import java.util.*
 
 
 open class LocationServiceListener(private val locationService : LocationService) : LocationListener{
+
+    private val dao = (locationService.application as BasicLocationApplication).dao
+
+
     override fun onLocationChanged(location: Location?) {
         Timber.d("onLocationChanged ${location?.provider}")
         if(location != null){
             Timber.d("$location")
+            val gson = Gson()
+            val json = gson.toJson(location)
+            Timber.d("dsd" + json)
             locationService.applicationContext.getSharedPreferences("Location", Context.MODE_PRIVATE).edit()
-                .putString("lat", String.format("%.6f", location.latitude))
-                .putString("lon", String.format("%.6f", location.longitude))
-                .putString("acc", String.format("%.6f", location.accuracy))
+                .putFloat("lat", location.latitude.toFloat())
+                .putFloat("lon", location.longitude.toFloat())
+                .putString("location", json)
                 .apply()
+            doAsync {
+                dao.insertLocation(
+                    MeteocoolLocation(
+                        1,
+                        location.longitude,
+                        location.latitude,
+                        location.altitude
+                    )
+                )
+            }
             val logEntry = String.format("%s lat: %.6f lon: %.6f", getCurrentTime(), location.latitude, location.longitude)
             writeToSDFile(logEntry)
         }else{
