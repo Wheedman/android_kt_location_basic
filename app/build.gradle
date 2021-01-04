@@ -60,7 +60,7 @@ dependencies {
     // Kotlin
     implementation "androidx.activity:activity-ktx:$activity_version"
 
-    def room_version = "2.2.5"
+    def room_version = "2.2.6"
 
     implementation "androidx.room:room-runtime:$room_version"
     kapt "androidx.room:room-compiler:$room_version"
@@ -81,6 +81,8 @@ dependencies {
     implementation "androidx.concurrent:concurrent-futures-ktx:1.1.0"
 
     implementation 'com.google.code.gson:gson:2.8.6'
+
+    implementation 'com.google.android.gms:play-services-location:17.1.0'
 }
 
 

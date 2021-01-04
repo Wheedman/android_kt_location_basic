@@ -13,21 +13,17 @@ import android.os.Bundle
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.ContextCompat
 import androidx.work.*
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import com.google.common.util.concurrent.ListenableFuture
 import timber.log.Timber
 import java.io.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-class ListenableLocationUpdateWorker(context: Context, params: WorkerParameters) :
+class ListenableGMS(context: Context, params: WorkerParameters) :
     ListenableWorker(context, params) {
 
     private val criteria : Criteria = Criteria()
     private val locationManager: LocationManager = applicationContext.getSystemService(Context.LOCATION_SERVICE) as LocationManager
-    private var fusedLocationClient: FusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-
 
     init {
         criteria.accuracy = Criteria.ACCURACY_MEDIUM
@@ -68,34 +64,16 @@ class ListenableLocationUpdateWorker(context: Context, params: WorkerParameters)
                         it.set(Result.failure())
                     }
                 }
-                val prov = locationManager.getBestProvider(criteria, true) // Test with GPS
+                val prov = locationManager.getBestProvider(criteria, true)
                 if(prov == null){
                     it.set(Result.failure())
                 }else {
-                    fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-                        if(location != null){
-                            val logEntry = String.format("%s lat: %.6f lon: %.6f", getCurrentTime(), location.latitude, location.longitude)
-                            writeToSDFile(logEntry)
-                            val uploadLocation: OneTimeWorkRequest =
-                                OneTimeWorkRequestBuilder<UploadWorker>()
-                                    .setInputData(convertLocationToData(location))
-                                    .build()
-                            WorkManager.getInstance(applicationContext)
-                                .enqueue(uploadLocation)
-                            it.set(Result.success())
-                        }
-                        else{
-                            it.set(Result.retry())
-                        }
-                    }
-//                   val location =  locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER)
-
-//                    locationManager.requestLocationUpdates(
-//                        prov,
-//                        10,
-//                        500f,
-//                        listener
-//                    )
+                    locationManager.requestLocationUpdates(
+                        prov,
+                        10,
+                        500f,
+                        listener
+                    )
                 }
             } else {
                 Result.failure()
