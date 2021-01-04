@@ -1,7 +1,6 @@
-package com.example.basic_location.ui.main
+package com.example.basic_location.fused
 
 import android.Manifest
-import android.annotation.SuppressLint
 import android.content.Context
 import android.content.pm.PackageManager
 import android.location.Location

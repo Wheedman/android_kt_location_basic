@@ -1,4 +1,4 @@
-package com.example.basic_location.ui.main
+package com.example.basic_location.locmanager
 
 import android.annotation.SuppressLint
 import android.app.Service
@@ -9,7 +9,6 @@ import android.location.LocationListener
 import android.location.LocationManager
 import android.os.Binder
 import android.os.IBinder
-import com.example.basic_location.ui.main.database.LocationServiceListener
 import timber.log.Timber
 import java.io.*
 import java.util.*
@@ -48,7 +47,7 @@ class LocationService() : Service() {
             stopSelf()
             START_NOT_STICKY
         }else {
-            Timber.d("Starting location updates")
+            Timber.d("Starting location updates ${prov.toString()}")
             locationManager.requestLocationUpdates(prov, minTime, minDistance, listener)
             START_STICKY
         }
@@ -63,6 +62,7 @@ class LocationService() : Service() {
     override fun onBind(intent: Intent?): IBinder {
         return binder
     }
+
 
     inner class LocalBinder : Binder() {
         // Return this instance of LocalService so clients can call public methods

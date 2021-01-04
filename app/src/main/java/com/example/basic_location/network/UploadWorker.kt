@@ -1,4 +1,4 @@
-package com.example.basic_location.ui.main
+package com.example.basic_location.network
 
 import android.content.Context
 import androidx.work.Worker

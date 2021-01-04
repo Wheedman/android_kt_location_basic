@@ -6,11 +6,8 @@ import android.content.Context
 import android.content.Intent
 import android.content.ServiceConnection
 import android.content.pm.PackageManager
-import android.location.Location
-import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
-import android.provider.DocumentsContract
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -22,9 +19,9 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.work.*
 import com.example.basic_location.R
-import com.example.basic_location.ui.main.database.MeteocoolLocation
-import com.google.gson.Gson
-import org.jetbrains.anko.support.v4.defaultSharedPreferences
+import com.example.basic_location.app.BasicLocationApplication
+import com.example.basic_location.locmanager.LocationService
+import com.example.basic_location.storage.MeteocoolLocation
 import timber.log.Timber
 import java.util.concurrent.TimeUnit
 

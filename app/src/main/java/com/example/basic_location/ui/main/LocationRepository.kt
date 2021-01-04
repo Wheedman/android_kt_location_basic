@@ -1,14 +1,12 @@
 package com.example.basic_location.ui.main
 
-import android.content.Context
 import android.content.SharedPreferences
 import android.location.Location
 import androidx.annotation.WorkerThread
-import androidx.arch.core.util.Function
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Transformations
-import com.example.basic_location.ui.main.database.MeteocoolLocation
-import com.example.basic_location.ui.main.database.MeteocoolLocationDao
+import com.example.basic_location.storage.MeteocoolLocation
+import com.example.basic_location.storage.MeteocoolLocationDao
 import com.google.gson.Gson
 import kotlinx.coroutines.flow.Flow
 

@@ -1,13 +1,11 @@
 package com.example.basic_location.ui.main
 
-import android.annotation.SuppressLint
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.location.Location
-import android.os.Bundle
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.work.*
+import com.example.basic_location.network.UploadWorker
 import timber.log.Timber
 
 class LocationUpdatesBroadcastReceiver : BroadcastReceiver(){

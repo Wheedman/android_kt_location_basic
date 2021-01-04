@@ -1,10 +1,9 @@
-package com.example.basic_location.ui.main.database
+package com.example.basic_location.storage
 
 import android.content.Context
 import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
-import kotlinx.coroutines.CoroutineScope
 
 @Database(entities = arrayOf(MeteocoolLocation::class), version = 1)
 abstract class BasicLocationDatabase : RoomDatabase() {

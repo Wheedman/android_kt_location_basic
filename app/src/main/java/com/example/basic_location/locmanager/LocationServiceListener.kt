@@ -1,12 +1,12 @@
-package com.example.basic_location.ui.main.database
+package com.example.basic_location.locmanager
 
 import android.content.Context
 import android.location.Location
 import android.location.LocationListener
 import android.os.Bundle
 import androidx.core.content.ContextCompat
-import com.example.basic_location.ui.main.BasicLocationApplication
-import com.example.basic_location.ui.main.LocationService
+import com.example.basic_location.app.BasicLocationApplication
+import com.example.basic_location.storage.MeteocoolLocation
 import com.google.gson.Gson
 import org.jetbrains.anko.doAsync
 import timber.log.Timber

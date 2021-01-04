@@ -1,4 +1,4 @@
-package com.example.basic_location.ui.main
+package com.example.basic_location.storage
 
 import android.content.SharedPreferences
 import androidx.lifecycle.LiveData

@@ -1,9 +1,7 @@
 package com.example.basic_location.ui.main
 
 import android.Manifest
-import android.app.PendingIntent
 import android.content.Context
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Criteria
 import android.location.Location
@@ -13,6 +11,7 @@ import android.os.Bundle
 import androidx.concurrent.futures.CallbackToFutureAdapter
 import androidx.core.content.ContextCompat
 import androidx.work.*
+import com.example.basic_location.network.UploadWorker
 import com.google.common.util.concurrent.ListenableFuture
 import timber.log.Timber
 import java.io.*

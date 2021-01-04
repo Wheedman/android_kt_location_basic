@@ -1,10 +1,9 @@
 package com.example.basic_location.ui.main
 
-import android.location.Location
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.asLiveData
-import com.example.basic_location.ui.main.database.MeteocoolLocation
+import com.example.basic_location.storage.MeteocoolLocation
 
 class MainViewModel(private val locationRepository : LocationRepository) : ViewModel() {
 

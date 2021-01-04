@@ -1,4 +1,4 @@
-package com.example.basic_location.ui.main.database
+package com.example.basic_location.storage
 
 import androidx.room.*
 import kotlinx.coroutines.flow.Flow
